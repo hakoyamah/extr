@@ -1,0 +1,9 @@
+citations <- c(
+  bibentry(
+    bibtype = "Misc",
+    title = "Confidence interval for extinction risk: revisiting the misconception that the interval is too imprecise to be useful",
+    author = person("Hiroshi", "Hakoyama"),
+    year = 2025,
+    howpublished = "Preprint available at https://doi.org/10.1101/XXXXXX"
+  )
+)
