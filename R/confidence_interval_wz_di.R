@@ -25,77 +25,61 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#' @title Computes Confidence Intervals of Extinction Risk for
-#' a Density-Independent Population Model
+#' @title Confidence Intervals for Extinction Probability (w–z, DI model)
 #'
 #' @description
-#' Calculates the confidence interval for the extinction probability of a
-#' density-independent population model using the \eqn{w}–\eqn{z} method
-#' (Hakoyama, 2025).
+#' Computes confidence intervals (CIs) for extinction probability in a
+#' density-independent (drifted Wiener) model using the w–z method, and
+#' provides a formatter for display-ready CI strings.
 #'
-#' @param mu numeric: Estimated population growth rate, \eqn{\hat{\mu}}.
-#' @param xd numeric: Distance to extinction threshold on a log scale,
-#'   \eqn{x_d = \log(n_q / n_e)}.
-#' @param s numeric: Estimated environmental variance, \eqn{\hat{\sigma}^2}.
-#' @param th numeric: Time horizon for extinction probability evaluation,
-#' \eqn{t_h}.
-#' @param tq numeric: Total observation period (from first to last data point),
-#' \eqn{t_q}.
-#' @param qq integer: Number of time intervals (sample size minus 1), \eqn{q}.
-#' @param alpha numeric: Significance level, i.e., \eqn{\alpha} =
-#' 1 - (confidence level).
+#' @param mu Numeric. Estimated growth rate \eqn{\hat{\mu}}.
+#' @param xd Numeric. Log-distance to threshold \eqn{x_d=\log(n_q/n_e)}.
+#' @param s Numeric. Estimated environmental variance \eqn{\hat{\sigma}^2}.
+#' @param th Numeric. Time horizon \eqn{t^{\ast}} for evaluation.
+#' @param tq Numeric. Observation span \eqn{t_q} (first to last time).
+#' @param qq Integer. Number of intervals \eqn{q} (sample size minus 1).
+#' @param alpha Numeric. Significance level \eqn{\alpha}\,=\,1\,-\,CL.
+#' @param prob_fun Function. One of \code{ext_prob_di},
+#'   \code{log_ext_prob_di}, \code{log_ext_comp_di}.
+#' @param digits Integer. Significant digits for formatting (used only by
+#'   \code{ci_wz_format_di}).
 #'
 #' @details
-#' To improve extinction probability estimation, two transformed parameters,
-#' \eqn{w} and \eqn{z}, are introduced as functions of the growth rate \eqn{\mu}
-#' and environmental variance \eqn{\sigma^2}:
-#' \deqn{
-#' w = \frac{\mu t + x_d}{\sigma \sqrt{t}}, \quad
-#' z = \frac{-\mu t + x_d}{\sigma \sqrt{t}},
-#' }
-#' where \eqn{t} is the time horizon and \eqn{x_d = \log(n_q / n_e)} is the
-#' log-distance to the extinction threshold.
+#' The w–z method derives CIs by inverting noncentral-\eqn{t}
+#' distributions for the transformed statistics \eqn{w} and \eqn{z},
+#' then combining them to form bounds on \eqn{G(w,z)}.
 #'
-#' The extinction probability within \eqn{t} is expressed as:
-#' \deqn{
-#' \Pr[T \leq t] = G(w, z) = \Phi(-w) +
-#' \exp\left(\frac{z^2 - w^2}{2}\right) \Phi(-z),
-#' }
-#' where \eqn{\Phi(\cdot)} is the standard normal cumulative distribution
-#' function.
+#' Exact confidence intervals for \eqn{w} and \eqn{z} are obtained by
+#' numerically solving the noncentral-\eqn{t} quantile equations
+#' corresponding to the observed statistics.
 #'
-#' The maximum likelihood estimators \eqn{\widehat{w}} and \eqn{\widehat{z}}
-#' follow non-central \eqn{t}-distributions with \eqn{q-1} degrees of freedom:
+#' The CI for \eqn{G(w,z)} is then approximated by
 #' \deqn{
-#' \widehat{w} \sqrt{\frac{q-1}{q}} \sqrt{\frac{t_q}{t}} \sim t(\delta_w, q-1),
-#' \quad
-#' \widehat{z} \sqrt{\frac{q-1}{q}} \sqrt{\frac{t_q}{t}} \sim t(\delta_z, q-1),
+#'   \bigl( G(\overline{w},\,\underline{z}),\;
+#'          G(\underline{w},\,\overline{z}) \bigr),
 #' }
-#' with drift parameters
-#' \deqn{
-#' \delta_w = w \sqrt{\frac{t_q}{t}}, \quad
-#' \delta_z = z \sqrt{\frac{t_q}{t}}.
-#' }
-#'
-#' Asymptotically exact \eqn{(1-\alpha)} confidence intervals for \eqn{w} and
-#' \eqn{z} are obtained by numerically solving the non-central \eqn{t} quantile
-#' equations corresponding to the observed statistics.
-#'
-#' The confidence interval for the extinction probability \eqn{G(w, z)} is then
-#' approximated by combining these intervals as
-#' \deqn{
-#' \left( G(\overline{\Psi_w}, \underline{\Psi_z}), \quad
-#' G(\underline{\Psi_w}, \overline{\Psi_z}) \right),
-#' }
-#' where \eqn{\overline{\Psi_w}}, \eqn{\underline{\Psi_w}},
-#' \eqn{\overline{\Psi_z}}, and \eqn{\underline{\Psi_z}} are the upper and lower
+#' where \eqn{\overline{w}}, \eqn{\underline{w}},
+#' \eqn{\overline{z}}, and \eqn{\underline{z}} are the upper and lower
 #' confidence limits for \eqn{w} and \eqn{z}, respectively.
+#' Across the full parameter space, this approach achieves near-nominal
+#' coverage. When $z$ is large and positive, $G$ depends only on $w$, so
+#' exact CIs are available.
 #'
-#' This \emph{w-z method} yields exact confidence intervals when \eqn{z \gg 0}
-#' and robust approximations when \eqn{z \ll 0}.
+#' The argument \code{prob_fun} selects which probability is evaluated:
+#' \itemize{
+#'   \item \code{ext_prob_di}, \code{log_ext_prob_di}:
+#'     CIs for \eqn{G(w,z)} and \eqn{\log G(w,z)};
+#'     returned as (lower, upper).
+#'   \item \code{log_ext_comp_di}:
+#'     CIs for \eqn{\log Q(w,z)= \log (1-G(w,z))};
+#'     returned as (lower, upper).
+#' }
 #'
-#' @return A numeric vector of length two containing the lower and upper
-#'   confidence limits of the extinction probability.
+#' @return
+#' For \code{confidence_interval_wz_di}: numeric vector \code{c(lower, upper)}
+#' on the chosen scale (natural log if \code{log_*}).\cr
+#' For \code{ci_wz_format_di}: named character vector \code{c(lower, upper)}
+#' with values preformatted for display.
 #'
 #' @author Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}
 #'
@@ -103,24 +87,70 @@
 #'
 #' @keywords internal
 #'
-confidence_interval_wz_di <- function(mu, xd, s, th, tq, qq, alpha) {
+#' @name wz_ci_di
+#' @aliases confidence_interval_wz_di ci_wz_format_di
+NULL
+
+#' @rdname wz_ci_di
+confidence_interval_wz_di <- function(mu, xd, s, th, tq, qq, alpha,
+                                      prob_fun = ext_prob_di) {
   den1 <- sqrt(s * th)
   w_est <- (mu * th + xd) / den1
   z_est <- (- mu * th + xd) / den1
   df <- qq - 1
   const1 <- sqrt((qq - 1) * tq / (qq * th))
   const2 <- sqrt(tq / th)
-  find_cl <- function(tq, qq, th, est, a, width = 10) {
+  find_cl <- function(est, a, lower_tail, width = 10) {
     t_obs <- const1 * est
-    f <- function(x) pt(t_obs, df, const2 * x) - a
+    f <- function(x) stats::pt(t_obs, df, const2 * x, lower_tail) - a
     d_est <- est / width + 1
-    uniroot(f, c(- d_est + est, d_est + est), extendInt = "yes")$root
+    stats::uniroot(f, c(- d_est + est, d_est + est), extendInt = "yes",
+                   tol = 1e-14)$root
   }
-  lower_cl_w <- find_cl(tq, qq, th, w_est, 1 - alpha / 2)
-  upper_cl_w <- find_cl(tq, qq, th, w_est, alpha / 2)
-  lower_cl_z <- find_cl(tq, qq, th, z_est, 1 - alpha / 2)
-  upper_cl_z <- find_cl(tq, qq, th, z_est, alpha / 2)
-  lower_cl_p <- extinction_probability_wz_di(upper_cl_w, lower_cl_z)
-  upper_cl_p <- extinction_probability_wz_di(lower_cl_w, upper_cl_z)
+  lower_cl_w <- find_cl(w_est, alpha / 2, lower_tail = FALSE)
+  upper_cl_w <- find_cl(w_est, alpha / 2, lower_tail = TRUE)
+  lower_cl_z <- find_cl(z_est, alpha / 2, lower_tail = FALSE)
+  upper_cl_z <- find_cl(z_est, alpha / 2, lower_tail = TRUE)
+  if (identical(prob_fun, log_ext_comp_di)) {
+    lower_cl_p <- prob_fun(lower_cl_w, upper_cl_z)
+    upper_cl_p <- prob_fun(upper_cl_w, lower_cl_z)
+  } else {
+    lower_cl_p <- prob_fun(upper_cl_w, lower_cl_z)
+    upper_cl_p <- prob_fun(lower_cl_w, upper_cl_z)
+  }
   c(lower_cl_p, upper_cl_p)
+}
+
+#' @rdname wz_ci_di
+ci_wz_format_di <- function(mu, xd, s, th, tq, qq, alpha,
+                            digits = 5L) {
+  ci_linear_g <- confidence_interval_wz_di(
+    mu, xd, s, th, tq, qq, alpha, prob_fun = ext_prob_di
+  )
+  ci_log_g <- confidence_interval_wz_di(
+    mu, xd, s, th, tq, qq, alpha, prob_fun = log_ext_prob_di
+  )
+  ci_log_q <- confidence_interval_wz_di(
+    mu, xd, s, th, tq, qq, alpha, prob_fun = log_ext_comp_di
+  )
+
+  repr_lower <- repr_mode(ci_linear_g[[1]])
+  repr_upper <- repr_mode(ci_linear_g[[2]])
+
+  digits <- as.integer(digits)
+
+  lower_str <- format_by_mode(
+    mode = repr_lower, kind = "lower",
+    linear_g = NA_real_, log_g = NA_real_, log_q = NA_real_,
+    ci_linear_g = ci_linear_g, ci_log_g = ci_log_g,
+    ci_log_q = ci_log_q, digits = digits
+  )
+  upper_str <- format_by_mode(
+    mode = repr_upper, kind = "upper",
+    linear_g = NA_real_, log_g = NA_real_, log_q = NA_real_,
+    ci_linear_g = ci_linear_g, ci_log_g = ci_log_g,
+    ci_log_q = ci_log_q, digits = digits
+  )
+
+  c(lower = lower_str, upper = upper_str)
 }

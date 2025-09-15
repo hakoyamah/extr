@@ -2,7 +2,7 @@
 % Please edit documentation in R/ext_di.R
 \name{ext_di}
 \alias{ext_di}
-\title{Extinction Risk Estimation for a Density-Independent Population Model}
+\title{Extinction Risk Estimation for a Density-Independent Model}
 \usage{
 ext_di(
   dat,
@@ -11,145 +11,77 @@ ext_di(
   alpha = 0.05,
   unit = "years",
   qq_plot = FALSE,
-  formatted = TRUE
+  formatted = TRUE,
+  digits = getOption("extr.digits", 5L)
 )
 }
 \arguments{
-\item{dat}{a data frame with two columns representing time and population
-size, respectively. The column names are not restricted, but the columns must
-be ordered by time first, followed by population size. Time intervals do not
-need to be equally spaced.}
+\item{dat}{Data frame with two numeric columns: time (strictly increasing)
+and population size. Column names are not restricted.}
 
-\item{ne}{numeric: Extinction threshold, \eqn{n_e \geq 1}. The default is 1
-individual.}
+\item{ne}{Numeric. Extinction threshold \eqn{n_e \ge 1}. Default is 1.}
 
-\item{th}{numeric: Time horizon, \eqn{t_h}. The risk of extinction \eqn{G}
-is defined as the probability that a population's size will drop below a
-threshold \eqn{n_e} within a given time period \eqn{t_h}. The default is 100.}
+\item{th}{Numeric. Time horizon \eqn{t^{\ast} > 0}. Default is 100.}
 
-\item{alpha}{numeric: Significance level, i.e., \eqn{\alpha} =
-1 - (confidence level). The default is 0.05.}
+\item{alpha}{Numeric. Significance level \eqn{\alpha \in (0,1)}.
+Default is 0.05.}
 
-\item{unit}{character: The unit of time used in the dataset (e.g., "years",
-"days", "generations"). The default is "years". This determines the time unit
-for the growth rate \eqn{\mu}, environmental variance \eqn{\sigma^2}, and
-extinction probability \eqn{G}.}
+\item{unit}{Character. Unit of time (e.g., "years", "days", "generations").
+Default is "years".}
 
-\item{qq_plot}{logical: If \code{TRUE}, shows a QQ-plot for
-\eqn{\left(\log(n_{t_i} / n_{t_{i-1}}) - \hat{\mu} \tau_i\right) /
-\left(\hat{\sigma} \sqrt{\tau_i}\right) \sim N(0, 1)}, where \eqn{\hat{\mu}}
-and \eqn{\hat{\sigma}} denote the estimated parameters. Here,
-\eqn{(n_{t_0}, n_{t_1}, \dots, n_{t_q})} represents the time series of
-population sizes taken from the second column of \code{dat}. The default is
-\code{FALSE}.}
+\item{qq_plot}{Logical. If \code{TRUE}, draws a QQ-plot of standardized
+increments to check model assumptions. Default is \code{FALSE}.}
 
-\item{formatted}{logical: If \code{TRUE}, returns a user-friendly, formatted
-output. Otherwise, returns a raw list. The default is \code{TRUE}.}
+\item{formatted}{Logical. If \code{TRUE}, returns an \code{"ext_di"} object;
+otherwise returns a raw list. Default is \code{TRUE}.}
+
+\item{digits}{Integer. Preferred significant digits for printing. Affects
+display only. Default is \code{getOption("extr.digits", 5)}.}
 }
 \value{
-If \code{formatted = TRUE}, returns the following components in a
-formatted structure. If \code{formatted = FALSE}, returns a list:
-
-Estimates:
+A list (class \code{"ext_di"} if \code{formatted=TRUE}) with:
 \itemize{
-\item \code{Growth.rate}: MLE of growth rate, \eqn{\hat{\mu}}.
-\item \code{Variance}: MLE of environmental variance, \eqn{\hat{\sigma}^2}.
-\item \code{Unbiased.variance}: Unbiased estimate of environmental variance.
-\item \code{AIC}: Akaike Information Criterion for the distribution of
-population size \eqn{N}.
-\item \code{Extinction.probability}: MLE of the extinction probability within
-the time horizon \eqn{t_h}, denoted \eqn{G}.
-\item \code{lower_cl_mu}: Lower \eqn{(1 - \alpha)\%} confidence limit of
-\eqn{\mu}.
-\item \code{upper_cl_mu}: Upper \eqn{(1 - \alpha)\%} confidence limit of
-\eqn{\mu}.
-\item \code{lower_cl_s}: Lower \eqn{(1 - \alpha)\%} confidence limit of
-\eqn{\sigma^2}.
-\item \code{upper_cl_s}: Upper \eqn{(1 - \alpha)\%} confidence limit of
-\eqn{\sigma^2}.
-\item \code{lower_cl_p}: Lower \eqn{(1 - \alpha)\%} confidence limit of
-extinction probability \eqn{G}.
-\item \code{upper_cl_p}: Upper \eqn{(1 - \alpha)\%} confidence limit of
-extinction probability \eqn{G}.
-}
-
-Data summary:
-\itemize{
-\item \code{nq}: Latest observed population size, \eqn{n_q}.
-\item \code{xd}: Log-distance from latest size to extinction threshold,
-\eqn{x_d = \log(n_q / n_e)}.
-\item \code{sample.size}: Sample size (number of observations), \eqn{q + 1}.
-}
-
-Input parameters:
-\itemize{
-\item \code{unit}, \code{ne}, \code{th}, and \code{alpha}.
+\item \code{Growth.rate}, \code{Variance}, \code{Unbiased.variance};
+\item \code{AIC};
+\item \code{Extinction.probability} with confidence limits;
+\item data summary (\code{nq}, \code{xd}, \code{sample.size});
+\item input parameters (\code{unit}, \code{ne}, \code{th}, \code{alpha}).
 }
 }
 \description{
-Estimates demographic parameters and extinction probabilities
-over a specified time period based on a density-independent population model
-formulated as the Wiener process with drift to approximate population
-dynamics under environmental fluctuations. This function uses a time series
-of population sizes to estimate extinction risk under this model and applies
-the \eqn{w}-\eqn{z} method (Hakoyama, 2025), which provides more accurate
-confidence intervals than conventional approaches such as the delta method.
+Estimates demographic parameters and extinction probability under a
+density-independent (drifted Wiener) model. From a time series of
+population sizes, it computes MLEs of growth rate and environmental
+variance, then evaluates extinction risk over a horizon \eqn{t^{\ast}}.
+Confidence intervals are constructed by the \eqn{w}-\eqn{z} method,
+which achieve near-nominal coverage across the full parameter space.
 }
 \details{
-The \code{ext_di()} function estimates demographic parameters and
-extinction probabilities over a specified time period. It is based on the
-Wiener drift process model, which is one of the simplest frameworks for
-assessing extinction risk (Lande & Orzack, 1988). Population dynamics are
-modeled by the stochastic differential equation:
-\deqn{
-dX = \mu \, dt + \sigma \, dW,
-}
-where \eqn{X(t) = \log{N(t)}} is the logarithm of population size at time
-\eqn{t}, \eqn{\mu} is the growth rate, \eqn{\sigma^2} is the environmental
-variance, and \eqn{W(t)} is the Wiener process. The diffusion term on the
-right-hand side is interpreted in the Ito sense.
+Population dynamics follow \deqn{dX=\mu\,dt+\sigma\,dW,} where
+\eqn{X(t)=\log N(t)}, \eqn{\mu} is the growth rate, \eqn{\sigma^2} the
+environmental variance, and \eqn{W} a Wiener process. Extinction risk is
+\deqn{G=\Pr[T\le t^{\ast}\mid N(0)=n_0,n_e,\mu,\sigma],} the probability the
+population falls below \eqn{n_e} within \eqn{t^{\ast}}. Irregular intervals
+are allowed.
 
-The function implements a novel method (the \eqn{w}–\eqn{z} method, Hakoyama,
-2025) that provides more accurate confidence intervals for extinction risk
-than conventional methods such as the delta method.
-
-The estimation process involves three main steps:
+The function:
 \enumerate{
-\item Estimating demographic parameters such as population growth rate and
-environmental variance (Dennis et al., 1991).
-\item Estimating extinction probability using analytical formulas based on the
-Wiener drift process developed by Lande and Orzack (1988), who modeled
-extinction risk under environmental fluctuations.
-\item Calculating confidence intervals for these estimates using a novel method
-(Hakoyama, 2025).
+\item estimates \eqn{\mu} and \eqn{\sigma^2} (Dennis et al., 1991),
+\item computes extinction probability \eqn{G(w,z)}
+(Lande and Orzack, 1988),
+\item constructs confidence intervals for \eqn{G} using the
+\eqn{w}-\eqn{z} method (Hakoyama, 2025).
 }
 
-For step 3, the function implements a novel method (the \eqn{w}–\eqn{z}
-method, Hakoyama, 2025) that introduces two transformed parameters,
-\eqn{w} and \eqn{z}, as functions of \eqn{\mu}, \eqn{\sigma}, the time
-horizon \eqn{t_h}, and the log-distance to the extinction threshold
-\eqn{x_d}. These transformations simplify the extinction probability
-formula \eqn{G(w, z)} and yield confidence intervals with improved coverage
-properties compared to existing methods.
-
-Key features:
-\itemize{
-\item Accepts a time series of population sizes
-(\eqn{n_{t_0}, n_{t_1}, \dots, n_{t_q}}).
-\item Allows for irregular measurement intervals
-(\eqn{\tau_i = t_i - t_{i-1}}), permitting missing values in the time
-series (Dennis et al., 1991).
-\item Returns maximum likelihood estimates (MLEs) and confidence intervals for
-the growth rate, environmental variance, and extinction probability using
-the \eqn{w}–\eqn{z} method (Hakoyama, 2025).
-\item Can generate QQ-plots to assess model assumptions.
-}
+Numerical range. Probabilities are evaluated on \eqn{G}, \eqn{\log G}, and
+\eqn{\log(1-G)} scales. The log-scale removes the \eqn{\approx
+4.94\times10^{-324}} lower bound of linear doubles and extends the safe
+range down to \code{exp(-DBL_MAX)} (kept symbolically), avoiding
+underflow/cancellation.
 }
 \examples{
-# Yellowstone grizzly bears (from Dennis et al., 1991)
-dat <- data.frame(Time = c(1959, 1960, 1961, 1962, 1963, 1964, 1965,
-1966, 1967, 1968, 1969, 1970, 1971, 1972, 1973, 1974, 1975, 1976,
-1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987),
+# Example from Dennis et al. (1991), Yellowstone grizzly bears
+dat <- data.frame(Time = 1959:1987,
 Population = c(44, 47, 46, 44, 46, 45, 46, 40, 39, 39, 42, 44, 41, 40,
 33, 36, 34, 39, 35, 34, 38, 36, 37, 41, 39, 51, 47, 57, 47))
 
@@ -160,7 +92,10 @@ ext_di(dat, th = 100)
 ext_di(dat, th = 100, ne = 10)
 
 # With QQ-plot
-ext_di(dat, th = 100, ne = 10, qq_plot = TRUE)
+ext_di(dat, th = 100, qq_plot = TRUE)
+
+# Change digits
+ext_di(dat, th = 100, ne = 10, digits = 9)
 
 }
 \references{
@@ -172,13 +107,13 @@ Dennis, B., Munholland, P.L., and Scott, J.M. (1991) Estimation of growth
 and extinction parameters for endangered species. \emph{Ecological Monographs},
 61, 115–143.
 
-Hakoyama, H. (2025) Confidence interval for extinction risk: Revisiting the
-misconception that the interval is too imprecise to be useful. Preprint,
-available at \url{https://###/###.pdf} (accessed 2025-07-##).
+Hakoyama, H. (2025) Confidence intervals for extinction risk: validating
+population viability analysis with limited data.
+Preprint, doi:10.48550/arXiv.2509.09965
 }
 \seealso{
-\code{\link{w_statistic}}, \code{\link{z_statistic}},
-\code{\link{extinction_probability_wz_di}},
+\code{\link{statistics_di}},
+\code{\link{extinction_probability_di}},
 \code{\link{confidence_interval_wz_di}}, \code{\link{print.ext_di}}
 }
 \author{

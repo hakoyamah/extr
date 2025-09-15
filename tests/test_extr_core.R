@@ -26,6 +26,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 library("extr")
+repr_mode      <- extr:::repr_mode
+format_by_mode <- extr:::format_by_mode
 
 extr_test_1 <- function() {
   time <- 1:10
@@ -40,8 +42,8 @@ extr_test_2 <- function(tol = 1e-8) {
   population <- seq(100, 50, length.out = length(time))
   dat <- data.frame(time = time, population = population)
   res <- ext_di(dat, th = 50, ne = 10)
-  stopifnot(is.numeric(res$Extinction.probability))
-  stopifnot(res$Extinction.probability >= 0 && res$Extinction.probability <= 1)
+  stopifnot(is.numeric(res$linear_g))
+  stopifnot(res$linear_g >= 0 && res$linear_g <= 1)
   stopifnot(is.numeric(res$Growth.rate))
   stopifnot(is.numeric(res$Variance))
   stopifnot(is.numeric(res$Unbiased.variance))
@@ -117,11 +119,29 @@ extr_test_6 <- function() {
   stopifnot(found_unit)
 }
 
+# --- runner with summary ---
+all_extr_tests <- function() {
+  passed <- TRUE
+  tryCatch({
+    extr_test_1()
+    extr_test_2()
+    extr_test_3()
+    extr_test_4()
+    extr_test_5()
+    extr_test_6()
+  }, error = function(e) {
+    passed <<- FALSE
+    message("Test failed: ", conditionMessage(e))
+  })
 
-# Run all tests
-extr_test_1()
-extr_test_2()
-extr_test_3()
-extr_test_4()
-extr_test_5()
-extr_test_6()
+  if (passed) {
+    emojis <- c("\U1F389", "\U1F638", "\U1F3C5", "\U1F308")
+    cat("All base-R package tests passed", sample(emojis, 1), "\n")
+  } else {
+    stop("Some package tests failed \u274C")
+  }
+  invisible(passed)
+}
+
+# run unconditionally
+all_extr_tests()

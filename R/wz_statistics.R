@@ -25,32 +25,43 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#' @title Computes the w Statistic
+#' @title Computes the w and z Statistics
 #'
 #' @description
-#' Computes the w statistic used for extinction probability estimation
-#' in a density-independent population model.
+#' Estimators for the \eqn{w} and \eqn{z} statistics used in extinction
+#' probability calculations under a density-independent population model.
 #'
 #' @param mu numeric: Estimated population growth rate, \eqn{\hat{\mu}}.
 #' @param xd numeric: Distance to extinction threshold on a log scale,
 #'   \eqn{x_d = \log(n_q / n_e)}.
 #' @param s numeric: Estimated environmental variance, \eqn{\hat{\sigma}^2}.
 #' @param th numeric: Time horizon for extinction probability evaluation,
-#'   denoted \eqn{t_h}.
+#'   denoted \eqn{t^{\ast}}.
 #'
 #' @details
-#' The \eqn{w} statistic is defined as
+#' The statistics are defined as
 #' \deqn{
-#' w = \frac{\mu t_h + x_d}{\sqrt{\sigma^2 t_h}},
+#' \hat w = \frac{\hat \mu t^{\ast} + x_d}{\sqrt{\hat \sigma^2 t^{\ast}}},
+#' \qquad
+#' \hat z = \frac{- \hat \mu t^{\ast} + x_d}{\sqrt{\hat \sigma^2 t^{\ast}}}.
 #' }
-#' where \eqn{\mu} is the population growth rate, \eqn{\sigma^2} is the
-#' environmental variance, \eqn{t_h} is the time horizon, and \eqn{x_d} is
-#' the log-distance to the extinction threshold.
 #'
-#' @return numeric: Value of the w statistic.
+#' @return numeric: Value of the statistic.
+#'
+#' @name statistics_di
 #'
 #' @author Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}
 #'
 #' @keywords internal
 #'
-w_statistic <- function(mu, xd, s, th) (mu * th + xd) / sqrt(s * th)
+NULL
+
+#' @rdname statistics_di
+w_statistic <- function(mu, xd, s, th) {
+  (mu * th + xd) / sqrt(s * th)
+}
+
+#' @rdname statistics_di
+z_statistic <- function(mu, xd, s, th) {
+  (-mu * th + xd) / sqrt(s * th)
+}

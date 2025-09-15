@@ -3,6 +3,7 @@
 S3method(print,ext_di)
 export(ext_di)
 importFrom(stats,complete.cases)
+importFrom(stats,dnorm)
 importFrom(stats,pnorm)
 importFrom(stats,pt)
 importFrom(stats,qchisq)

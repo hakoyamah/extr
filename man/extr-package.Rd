@@ -6,7 +6,7 @@
 \alias{extr-package}
 \title{extr: Extinction Risk Estimation}
 \description{
-Estimates extinction probabilities from time series of population sizes based on a Wiener-drift process model. Implements the w-z method (Hakoyama, 2025) to improve the accuracy of confidence intervals over conventional approaches.
+Estimates extinction risk from population time series under a drifted Wiener process using the w-z method for accurate confidence intervals.
 }
 \author{
 \strong{Maintainer}: Hiroshi Hakoyama \email{hiroshi.hakoyama@gmail.com} (\href{https://orcid.org/0000-0001-7464-0754}{ORCID}) [copyright holder]

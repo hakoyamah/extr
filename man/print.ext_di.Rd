@@ -2,23 +2,26 @@
 % Please edit documentation in R/print.ext_di.R
 \name{print.ext_di}
 \alias{print.ext_di}
-\title{Print Extinction Risk Estimations}
+\title{Print Extinction Risk Estimates}
 \usage{
-\method{print}{ext_di}(x, digits = 5, ...)
+\method{print}{ext_di}(x, digits = NULL, ...)
 }
 \arguments{
-\item{x}{an object of class \code{"ext_di"} produced by
+\item{x}{An object of class \code{"ext_di"} as returned by
 \code{\link{ext_di}}.}
 
-\item{digits}{integer: Number of significant digits to display. Default is 5.}
+\item{digits}{Integer. Significant digits to display; defaults to
+\code{x$digits} when \code{NULL}.}
+
+\item{...}{Additional arguments (currently ignored).}
 }
 \value{
-Invisibly returns \code{obj} after printing formatted extinction risk
-estimation results, including estimates, confidence intervals, data
-summary, and input parameters.
+Invisibly returns \code{x} after printing the formatted results.
 }
 \description{
-Print Extinction Risk Estimations
+S3 method that prints a formatted summary for an \code{ext_di} object.
+The output includes the extinction probability (MLE), its CI, model
+parameters, a brief data summary, and input settings.
 }
 \author{
 Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}

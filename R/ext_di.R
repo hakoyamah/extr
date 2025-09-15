@@ -25,123 +25,66 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#' @title Extinction Risk Estimation for a Density-Independent Population Model
+#' @title Extinction Risk Estimation for a Density-Independent Model
 #'
-#' @description Estimates demographic parameters and extinction probabilities
-#' over a specified time period based on a density-independent population model
-#' formulated as the Wiener process with drift to approximate population
-#' dynamics under environmental fluctuations. This function uses a time series
-#' of population sizes to estimate extinction risk under this model and applies
-#' the \eqn{w}-\eqn{z} method (Hakoyama, 2025), which provides more accurate
-#' confidence intervals than conventional approaches such as the delta method.
+#' @description
+#' Estimates demographic parameters and extinction probability under a
+#' density-independent (drifted Wiener) model. From a time series of
+#' population sizes, it computes MLEs of growth rate and environmental
+#' variance, then evaluates extinction risk over a horizon \eqn{t^{\ast}}.
+#' Confidence intervals are constructed by the \eqn{w}-\eqn{z} method,
+#' which achieve near-nominal coverage across the full parameter space.
 #'
-#' @param dat a data frame with two columns representing time and population
-#' size, respectively. The column names are not restricted, but the columns must
-#' be ordered by time first, followed by population size. Time intervals do not
-#' need to be equally spaced.
-#' @param ne numeric: Extinction threshold, \eqn{n_e \geq 1}. The default is 1
-#' individual.
-#' @param th numeric: Time horizon, \eqn{t_h}. The risk of extinction \eqn{G}
-#' is defined as the probability that a population's size will drop below a
-#' threshold \eqn{n_e} within a given time period \eqn{t_h}. The default is 100.
-#' @param alpha numeric: Significance level, i.e., \eqn{\alpha} =
-#' 1 - (confidence level). The default is 0.05.
-#' @param unit character: The unit of time used in the dataset (e.g., "years",
-#' "days", "generations"). The default is "years". This determines the time unit
-#' for the growth rate \eqn{\mu}, environmental variance \eqn{\sigma^2}, and
-#' extinction probability \eqn{G}.
-#' @param qq_plot logical: If \code{TRUE}, shows a QQ-plot for
-#' \eqn{\left(\log(n_{t_i} / n_{t_{i-1}}) - \hat{\mu} \tau_i\right) /
-#' \left(\hat{\sigma} \sqrt{\tau_i}\right) \sim N(0, 1)}, where \eqn{\hat{\mu}}
-#' and \eqn{\hat{\sigma}} denote the estimated parameters. Here,
-#' \eqn{(n_{t_0}, n_{t_1}, \dots, n_{t_q})} represents the time series of
-#' population sizes taken from the second column of \code{dat}. The default is
-#' \code{FALSE}.
-#' @param formatted logical: If \code{TRUE}, returns a user-friendly, formatted
-#' output. Otherwise, returns a raw list. The default is \code{TRUE}.
+#' @param dat Data frame with two numeric columns: time (strictly increasing)
+#'   and population size. Column names are not restricted.
+#' @param ne Numeric. Extinction threshold \eqn{n_e \ge 1}. Default is 1.
+#' @param th Numeric. Time horizon \eqn{t^{\ast} > 0}. Default is 100.
+#' @param alpha Numeric. Significance level \eqn{\alpha \in (0,1)}.
+#'   Default is 0.05.
+#' @param unit Character. Unit of time (e.g., "years", "days", "generations").
+#'   Default is "years".
+#' @param qq_plot Logical. If \code{TRUE}, draws a QQ-plot of standardized
+#'   increments to check model assumptions. Default is \code{FALSE}.
+#' @param formatted Logical. If \code{TRUE}, returns an \code{"ext_di"} object;
+#'   otherwise returns a raw list. Default is \code{TRUE}.
+#' @param digits Integer. Preferred significant digits for printing. Affects
+#'   display only. Default is \code{getOption("extr.digits", 5)}.
 #'
-#' @details The \code{ext_di()} function estimates demographic parameters and
-#' extinction probabilities over a specified time period. It is based on the
-#' Wiener drift process model, which is one of the simplest frameworks for
-#' assessing extinction risk (Lande & Orzack, 1988). Population dynamics are
-#' modeled by the stochastic differential equation:
-#' \deqn{
-#' dX = \mu \, dt + \sigma \, dW,
+#' @details
+#' Population dynamics follow \deqn{dX=\mu\,dt+\sigma\,dW,} where
+#' \eqn{X(t)=\log N(t)}, \eqn{\mu} is the growth rate, \eqn{\sigma^2} the
+#' environmental variance, and \eqn{W} a Wiener process. Extinction risk is
+#' \deqn{G=\Pr[T\le t^{\ast}\mid N(0)=n_0,n_e,\mu,\sigma],} the probability the
+#' population falls below \eqn{n_e} within \eqn{t^{\ast}}. Irregular intervals
+#' are allowed.
+#'
+#' The function:
+#' \enumerate{
+#'   \item estimates \eqn{\mu} and \eqn{\sigma^2} (Dennis et al., 1991),
+#'   \item computes extinction probability \eqn{G(w,z)}
+#'         (Lande and Orzack, 1988),
+#'   \item constructs confidence intervals for \eqn{G} using the
+#'         \eqn{w}-\eqn{z} method (Hakoyama, 2025).
 #' }
-#' where \eqn{X(t) = \log{N(t)}} is the logarithm of population size at time
-#' \eqn{t}, \eqn{\mu} is the growth rate, \eqn{\sigma^2} is the environmental
-#' variance, and \eqn{W(t)} is the Wiener process. The diffusion term on the
-#' right-hand side is interpreted in the Ito sense.
 #'
-#' The function implements a novel method (the \eqn{w}–\eqn{z} method, Hakoyama,
-#' 2025) that provides more accurate confidence intervals for extinction risk
-#' than conventional methods such as the delta method.
+#' Numerical range. Probabilities are evaluated on \eqn{G}, \eqn{\log G}, and
+#' \eqn{\log(1-G)} scales. The log-scale removes the \eqn{\approx
+#' 4.94\times10^{-324}} lower bound of linear doubles and extends the safe
+#' range down to \code{exp(-DBL_MAX)} (kept symbolically), avoiding
+#' underflow/cancellation.
 #'
-#' The estimation process involves three main steps:
-#' 1. Estimating demographic parameters such as population growth rate and
-#'    environmental variance (Dennis et al., 1991).
-#' 2. Estimating extinction probability using analytical formulas based on the
-#'    Wiener drift process developed by Lande and Orzack (1988), who modeled
-#'    extinction risk under environmental fluctuations.
-#' 3. Calculating confidence intervals for these estimates using a novel method
-#'    (Hakoyama, 2025).
-#'
-#' For step 3, the function implements a novel method (the \eqn{w}–\eqn{z}
-#' method, Hakoyama, 2025) that introduces two transformed parameters,
-#' \eqn{w} and \eqn{z}, as functions of \eqn{\mu}, \eqn{\sigma}, the time
-#' horizon \eqn{t_h}, and the log-distance to the extinction threshold
-#' \eqn{x_d}. These transformations simplify the extinction probability
-#' formula \eqn{G(w, z)} and yield confidence intervals with improved coverage
-#' properties compared to existing methods.
-#'
-#' Key features:
-#' - Accepts a time series of population sizes
-#'   (\eqn{n_{t_0}, n_{t_1}, \dots, n_{t_q}}).
-#' - Allows for irregular measurement intervals
-#'   (\eqn{\tau_i = t_i - t_{i-1}}), permitting missing values in the time
-#'   series (Dennis et al., 1991).
-#' - Returns maximum likelihood estimates (MLEs) and confidence intervals for
-#'   the growth rate, environmental variance, and extinction probability using
-#'   the \eqn{w}–\eqn{z} method (Hakoyama, 2025).
-#' - Can generate QQ-plots to assess model assumptions.
-#'
-#' @return If \code{formatted = TRUE}, returns the following components in a
-#' formatted structure. If \code{formatted = FALSE}, returns a list:
-#'
-#' Estimates:
-#'   - \code{Growth.rate}: MLE of growth rate, \eqn{\hat{\mu}}.
-#'   - \code{Variance}: MLE of environmental variance, \eqn{\hat{\sigma}^2}.
-#'   - \code{Unbiased.variance}: Unbiased estimate of environmental variance.
-#'   - \code{AIC}: Akaike Information Criterion for the distribution of
-#'     population size \eqn{N}.
-#'   - \code{Extinction.probability}: MLE of the extinction probability within
-#'     the time horizon \eqn{t_h}, denoted \eqn{G}.
-#'   - \code{lower_cl_mu}: Lower \eqn{(1 - \alpha)\%} confidence limit of
-#'     \eqn{\mu}.
-#'   - \code{upper_cl_mu}: Upper \eqn{(1 - \alpha)\%} confidence limit of
-#'     \eqn{\mu}.
-#'   - \code{lower_cl_s}: Lower \eqn{(1 - \alpha)\%} confidence limit of
-#'     \eqn{\sigma^2}.
-#'   - \code{upper_cl_s}: Upper \eqn{(1 - \alpha)\%} confidence limit of
-#'     \eqn{\sigma^2}.
-#'   - \code{lower_cl_p}: Lower \eqn{(1 - \alpha)\%} confidence limit of
-#'     extinction probability \eqn{G}.
-#'   - \code{upper_cl_p}: Upper \eqn{(1 - \alpha)\%} confidence limit of
-#'     extinction probability \eqn{G}.
-#'
-#' Data summary:
-#'   - \code{nq}: Latest observed population size, \eqn{n_q}.
-#'   - \code{xd}: Log-distance from latest size to extinction threshold,
-#'     \eqn{x_d = \log(n_q / n_e)}.
-#'   - \code{sample.size}: Sample size (number of observations), \eqn{q + 1}.
-#'
-#' Input parameters:
-#'   - \code{unit}, \code{ne}, \code{th}, and \code{alpha}.
+#' @return A list (class \code{"ext_di"} if \code{formatted=TRUE}) with:
+#' \itemize{
+#'   \item \code{Growth.rate}, \code{Variance}, \code{Unbiased.variance};
+#'   \item \code{AIC};
+#'   \item \code{Extinction.probability} with confidence limits;
+#'   \item data summary (\code{nq}, \code{xd}, \code{sample.size});
+#'   \item input parameters (\code{unit}, \code{ne}, \code{th}, \code{alpha}).
+#' }
 #'
 #' @author Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}
 #'
 #' @references
-#'
 #' Lande, R. and Orzack, S.H. (1988) Extinction dynamics of age-structured
 #' populations in a fluctuating environment. *Proceedings of the National
 #' Academy of Sciences*, 85(19), 7418–7421.
@@ -150,15 +93,13 @@
 #' and extinction parameters for endangered species. *Ecological Monographs*,
 #' 61, 115–143.
 #'
-#' Hakoyama, H. (2025) Confidence interval for extinction risk: Revisiting the
-#' misconception that the interval is too imprecise to be useful. Preprint,
-#' available at \url{https://###/###.pdf} (accessed 2025-07-##).
+#' Hakoyama, H. (2025) Confidence intervals for extinction risk: validating
+#' population viability analysis with limited data.
+#' Preprint, doi:10.48550/arXiv.2509.09965
 #'
 #' @examples
-#' # Yellowstone grizzly bears (from Dennis et al., 1991)
-#' dat <- data.frame(Time = c(1959, 1960, 1961, 1962, 1963, 1964, 1965,
-#' 1966, 1967, 1968, 1969, 1970, 1971, 1972, 1973, 1974, 1975, 1976,
-#' 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987),
+#' # Example from Dennis et al. (1991), Yellowstone grizzly bears
+#' dat <- data.frame(Time = 1959:1987,
 #' Population = c(44, 47, 46, 44, 46, 45, 46, 40, 39, 39, 42, 44, 41, 40,
 #' 33, 36, 34, 39, 35, 34, 38, 36, 37, 41, 39, 51, 47, 57, 47))
 #'
@@ -169,7 +110,10 @@
 #' ext_di(dat, th = 100, ne = 10)
 #'
 #' # With QQ-plot
-#' ext_di(dat, th = 100, ne = 10, qq_plot = TRUE)
+#' ext_di(dat, th = 100, qq_plot = TRUE)
+#'
+#' # Change digits
+#' ext_di(dat, th = 100, ne = 10, digits = 9)
 #'
 #' @keywords models survival time-series methods
 #'
@@ -177,15 +121,21 @@
 #'
 #' @export
 #'
-#' @seealso [`extr::w_statistic`], [`extr::z_statistic`],
-#' [`extr::extinction_probability_wz_di`],
+#' @seealso [`extr::statistics_di`],
+#' [`extr::extinction_probability_di`],
 #' [`extr::confidence_interval_wz_di`], [`extr::print.ext_di`]
 #'
+
 ext_di <- function(dat, ne = 1, th = 100, alpha = 0.05, unit = "years",
-                   qq_plot = FALSE, formatted = TRUE) {
+                   qq_plot = FALSE, formatted = TRUE,
+                   digits = getOption("extr.digits", 5L)) {
   if (ne < 1) stop("Extinction threshold 'ne' must be >= 1.")
+  if (th <= 0) stop("Time horizon 'th' must be > 0.")
+  if (!(is.numeric(alpha) && alpha > 0 && alpha < 1)) {
+    stop("'alpha' must be in (0, 1).")
+  }
   if (!is.data.frame(dat) || ncol(dat) != 2) {
-    stop(paste0("Input 'dat' must be a data frame with two columns:",
+    stop(paste0("Input 'dat' must be a data frame with two columns: ",
                 "time first, then population size."))
   }
   yr <- dat[, 1]
@@ -200,18 +150,30 @@ ext_di <- function(dat, ne = 1, th = 100, alpha = 0.05, unit = "years",
     stop(paste0("Population size column contains values less than 1, ",
                 "which is not allowed."))
   }
-  if (length(yr) < 2) stop("At least two observations are required.")
+  if (length(yr) < 3) {
+    stop("At least three observations are required to compute CIs (q+1 >= 3).")
+  }
+
   complete <- complete.cases(yr, n)
   yr <- yr[complete]
   n  <-  n[complete]
   ti <- yr - yr[1]
   tau <- diff(ti)
+  if (any(tau <= 0)) {
+    stop("Time values must be strictly increasing (no ties or decreases).")
+  }
   delta_log_n <- diff(log(n))
   qq <- length(yr) - 1
   tq <- ti[length(ti)]
   nq <- n[length(n)]
   mu <- log(nq / n[1]) / tq
   s <- sum((delta_log_n - mu * tau)^2 / tau) / qq
+  if (s == 0) {
+    stop(paste0(
+      "Estimated variance s is zero; check data ",
+      "(perfectly linear log-series)."
+    ))
+  }
   us <- qq * s / (qq - 1)
   xd <- log(nq / ne)
   lnl <- - sum(log(n[-1] * sqrt(2 * tau * pi))) - (qq / 2) * log(s) -
@@ -231,17 +193,34 @@ ext_di <- function(dat, ne = 1, th = 100, alpha = 0.05, unit = "years",
 
   ww <- w_statistic(mu, xd, s, th)
   zz <- z_statistic(mu, xd, s, th)
-  pp <- extinction_probability_wz_di(ww, zz)
+  if (ww + zz <= 0) {
+    stop("Invalid input: require n0 = nq > ne")
+  }
 
-  cl_p <- confidence_interval_wz_di(mu, xd, s, th, tq, qq, alpha)
+  linear_g  <- ext_prob_di(ww, zz)
+  log_g  <- log_ext_prob_di(ww, zz)
+  log_q  <- log_ext_comp_di(ww, zz)
 
-  lower_cl_p <- cl_p[[1]]
-  upper_cl_p <- cl_p[[2]]
+  ci_linear_g <- confidence_interval_wz_di(
+    mu, xd, s, th, tq, qq, alpha, prob_fun = ext_prob_di
+  )
+  ci_log_g <- confidence_interval_wz_di(
+    mu, xd, s, th, tq, qq, alpha, prob_fun = log_ext_prob_di
+  )
+  ci_log_q <- confidence_interval_wz_di(
+    mu, xd, s, th, tq, qq, alpha, prob_fun = log_ext_comp_di
+  )
+
+  repr_point <- repr_mode(linear_g)
+  repr_lower <- repr_mode(ci_linear_g[[1]])
+  repr_upper <- repr_mode(ci_linear_g[[2]])
 
   results <- list(ne = ne, th = th,
                   alpha = alpha,
                   unit = unit,
                   aic = aic,
+                  tq = tq,
+                  qq = qq,
                   sample.size = qq + 1,
                   nq = nq,
                   xd = xd,
@@ -252,10 +231,17 @@ ext_di <- function(dat, ne = 1, th = 100, alpha = 0.05, unit = "years",
                   lower_cl_s = lower_cl_s,
                   upper_cl_s = upper_cl_s,
                   Unbiased.variance = us,
-                  Extinction.probability = pp,
-                  lower_cl_p = lower_cl_p,
-                  upper_cl_p = upper_cl_p)
-  if (formatted == TRUE) {
+                  linear_g = linear_g,
+                  log_g = log_g,
+                  log_q = log_q,
+                  ci_linear_g = ci_linear_g,
+                  ci_log_g = ci_log_g,
+                  ci_log_q = ci_log_q,
+                  repr_point = repr_point,
+                  repr_lower = repr_lower,
+                  repr_upper = repr_upper,
+                  digits = as.integer(digits))
+  if (formatted) {
     class(results) <- "ext_di"
   }
   return(results)

@@ -1,15 +1,14 @@
 Package: extr
 Title: Extinction Risk Estimation
-Version: 0.9.0
+Version: 1.0.0
 Authors@R: 
     person("Hiroshi", "Hakoyama", , "hiroshi.hakoyama@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-7464-0754"))
-Description: Estimates extinction probabilities from time series of
-    population sizes based on a Wiener-drift process model. Implements the
-    w-z method (Hakoyama, 2025) to improve the accuracy of confidence
-    intervals over conventional approaches.
+Description: Estimates extinction risk from population time series under a
+    drifted Wiener process using the w-z method for accurate confidence
+    intervals.
 License: BSD_2_clause + file LICENSE
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

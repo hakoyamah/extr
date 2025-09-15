@@ -4,13 +4,14 @@
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
-<url><loc>/reference/confidence_interval_wz_di.html</loc></url>
 <url><loc>/reference/ext_di.html</loc></url>
-<url><loc>/reference/extinction_probability_wz_di.html</loc></url>
+<url><loc>/reference/extinction_probability_di.html</loc></url>
 <url><loc>/reference/extr-package.html</loc></url>
+<url><loc>/reference/format_by_mode.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/print.ext_di.html</loc></url>
-<url><loc>/reference/w_statistic.html</loc></url>
-<url><loc>/reference/z_statistic.html</loc></url>
+<url><loc>/reference/repr_mode.html</loc></url>
+<url><loc>/reference/statistics_di.html</loc></url>
+<url><loc>/reference/wz_ci_di.html</loc></url>
 </urlset>
 

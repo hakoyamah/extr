@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">extr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,33 +32,27 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.9.0" id="extr-090">extr 0.9.0<a class="anchor" aria-label="anchor" href="#extr-090"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.8.0" id="extr-080">extr 0.8.0<a class="anchor" aria-label="anchor" href="#extr-080"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.7.0" id="extr-070">extr 0.7.0<a class="anchor" aria-label="anchor" href="#extr-070"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.0" id="extr-060">extr 0.6.0<a class="anchor" aria-label="anchor" href="#extr-060"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.0" id="extr-050">extr 0.5.0<a class="anchor" aria-label="anchor" href="#extr-050"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.4.0" id="extr-040">extr 0.4.0<a class="anchor" aria-label="anchor" href="#extr-040"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.3.0" id="extr-030">extr 0.3.0<a class="anchor" aria-label="anchor" href="#extr-030"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.2.0" id="extr-020">extr 0.2.0<a class="anchor" aria-label="anchor" href="#extr-020"></a></h2>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.0" id="extr-010">extr 0.1.0<a class="anchor" aria-label="anchor" href="#extr-010"></a></h2>
-<ul><li>Initial CRAN submission.</li>
+<h2 class="pkg-version" data-toc-text="1.0.0" id="extr-100-2025-09-15">extr 1.0.0 (2025-09-15)<a class="anchor" aria-label="anchor" href="#extr-100-2025-09-15"></a></h2>
+<div class="section level3">
+<h3 id="up-to-1-0-0">Up to 0.9.0<a class="anchor" aria-label="anchor" href="#up-to-1-0-0"></a></h3>
+<ul><li>Core extinction-risk estimator <code>ext_di</code> for density-independent (drifted Wiener) models. Provides:
+<ul><li>MLEs of growth rate and environmental variance from irregular time series.</li>
+<li>Point estimate of extinction probability.</li>
+<li>Confidence intervals for extinction probability (w-z method) with near-nominal coverage.</li>
+<li>QQ-plot diagnostic optional.</li>
+</ul></li>
 </ul></div>
+<div class="section level3">
+<h3 id="changes-in-1-0-0">Changes in 1.0.0<a class="anchor" aria-label="anchor" href="#changes-in-1-0-0"></a></h3>
+<ul><li>Numerical stability and range
+<ul><li>Adaptive probability representation on G, log G, and log(1-G). The complement is used when G is near 0 or 1 to maintain accuracy.</li>
+<li>The log scale removes double-precision bounds near 0 and 1, extending the safe window down to symbolic exp(-DBL_MAX). Probabilities close to 0 or 1 are displayed as 10^-* or 1-10^-*.</li>
+</ul></li>
+<li>Printed output
+<ul><li>Printed precision is configurable via options(“extr.digits”).</li>
+</ul></li>
+</ul></div>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
