@@ -12,7 +12,8 @@ ext_di(
   unit = "years",
   qq_plot = FALSE,
   formatted = TRUE,
-  digits = getOption("extr.digits", 5L)
+  digits = getOption("extr.digits", 5L),
+  method = c("naive", "oear")
 )
 }
 \arguments{
@@ -30,57 +31,83 @@ Default is 0.05.}
 Default is "years".}
 
 \item{qq_plot}{Logical. If \code{TRUE}, draws a QQ-plot of standardized
-increments to check model assumptions. Default is \code{FALSE}.}
+increments to check model assumptions (naive method only).
+Default is \code{FALSE}.}
 
 \item{formatted}{Logical. If \code{TRUE}, returns an \code{"ext_di"} object;
 otherwise returns a raw list. Default is \code{TRUE}.}
 
 \item{digits}{Integer. Preferred significant digits for printing. Affects
 display only. Default is \code{getOption("extr.digits", 5)}.}
+
+\item{method}{Character. Variance estimation method.
+\code{"naive"} uses the MLE variance.
+\code{"oear"} uses the OEAR HAC long-run-variance estimator
+(AR(1) pre-whitening + Bartlett kernel).
+Default is \code{"naive"}.}
 }
 \value{
-A list (class \code{"ext_di"} if \code{formatted=TRUE}) with:
-\itemize{
-\item \code{Growth.rate}, \code{Variance}, \code{Unbiased.variance};
-\item \code{AIC};
-\item \code{Extinction.probability} with confidence limits;
-\item data summary (\code{nq}, \code{xd}, \code{sample.size});
-\item input parameters (\code{unit}, \code{ne}, \code{th}, \code{alpha}).
-}
+A list (class \code{"ext_di"} when \code{formatted=TRUE}) containing
+extinction-risk estimates and diagnostics.
+Core elements include \code{Growth.rate}, \code{Variance},
+\code{Unbiased.variance}, \code{lower_cl_s}, \code{upper_cl_s},
+\code{linear_g}, \code{log_g}, \code{log_q},
+\code{ci_linear_g}, \code{ci_log_g}, \code{ci_log_q},
+and data/input summaries (\code{nq}, \code{xd}, \code{sample.size},
+\code{unit}, \code{ne}, \code{th}, \code{alpha}).
+
+\code{Variance} is method-dependent (naive MLE for \code{method="naive"},
+OEAR HAC estimate for \code{method="oear"}).
+\code{aic} is reported only for \code{method="naive"} and is \code{NA}
+for \code{method="oear"}.
+\code{method_diag} is \code{NULL} for naive and contains
+\code{rho_tilde_pw} and \code{j} for oear.
+\code{lower_cl_s} and \code{upper_cl_s} are chi-square based:
+exact under \code{method="naive"} model assumptions, and pragmatic
+plug-in approximations for \code{method="oear"}.
 }
 \description{
 Estimates demographic parameters and extinction probability under a
 density-independent (drifted Wiener) model. From a time series of
-population sizes, it computes MLEs of growth rate and environmental
-variance, then evaluates extinction risk over a horizon \eqn{t^{\ast}}.
-Confidence intervals are constructed by the \eqn{w}-\eqn{z} method,
-which achieve near-nominal coverage across the full parameter space.
+population sizes, it estimates growth rate and variance using
+either a naive MLE variance estimator or an
+observation-error-and-autocovariance-robust (OEAR) estimator, then evaluates
+extinction risk over a horizon \eqn{t^{\ast}} with confidence intervals
+from the \eqn{w}--\eqn{z} method.
+In the observation-error-free setting, the naive \eqn{w}--\eqn{z} interval
+achieves near-nominal coverage, while OEAR can be more robust under additive
+observation error and unknown short-run autocovariance.
 }
 \details{
 Population dynamics follow \deqn{dX=\mu\,dt+\sigma\,dW,} where
-\eqn{X(t)=\log N(t)}, \eqn{\mu} is the growth rate, \eqn{\sigma^2} the
-environmental variance, and \eqn{W} a Wiener process. Extinction risk is
-\deqn{G=\Pr[T\le t^{\ast}\mid N(0)=n_0,n_e,\mu,\sigma],} the probability the
-population falls below \eqn{n_e} within \eqn{t^{\ast}}. Irregular intervals
-are allowed.
+\eqn{X(t)=\log N(t)} and \eqn{W} is a Wiener process. Extinction risk is
+\deqn{G=\Pr[T\le t^{\ast}\mid N(0)=n_0,n_e,\mu,\sigma],}
+the probability that population size falls below \eqn{n_e} within
+\eqn{t^{\ast}}. Irregular observation intervals are allowed.
 
-The function:
+The function first estimates \eqn{\mu}, then estimates a variance quantity
+according to \code{method}:
 \enumerate{
-\item estimates \eqn{\mu} and \eqn{\sigma^2} (Dennis et al., 1991),
-\item computes extinction probability \eqn{G(w,z)}
-(Lande and Orzack, 1988),
-\item constructs confidence intervals for \eqn{G} using the
-\eqn{w}-\eqn{z} method (Hakoyama, 2025).
+\item \code{naive}: uses the drifted-Wiener MLE variance
+(Dennis et al., 1991).
+\item \code{oear}: uses an observation-error-and-autocovariance-robust
+(OEAR) HAC long-run-variance estimator with AR(1) pre-whitening and a
+Bartlett kernel (Hakoyama, in press).
 }
 
-Numerical range. Probabilities are evaluated on \eqn{G}, \eqn{\log G}, and
-\eqn{\log(1-G)} scales. The log-scale removes the \eqn{\approx
-4.94\times10^{-324}} lower bound of linear doubles and extends the safe
-range down to \code{exp(-DBL_MAX)} (kept symbolically), avoiding
-underflow/cancellation.
+For \code{method = "oear"}, robustness to additive observation error relies
+on long-run-variance cancellation of differenced observation error
+(McNamara and Harding, 2004), while robustness to unknown short-run
+autocovariance comes from HAC estimation of long-run variance.
+
+Extinction probability is then computed as \eqn{G(w,z)}
+(Lande and Orzack, 1988), and confidence intervals are constructed using
+the \eqn{w}--\eqn{z} method (Hakoyama, in press).
 }
 \examples{
-# Example from Dennis et al. (1991), Yellowstone grizzly bears
+# Example from Dennis et al. (1991), Yellowstone grizzly bears.
+# Population is a running 3-year sum (3-year moving total) digitized from
+# Fig. 5.
 dat <- data.frame(Time = 1959:1987,
 Population = c(44, 47, 46, 44, 46, 45, 46, 40, 39, 39, 42, 44, 41, 40,
 33, 36, 34, 39, 35, 34, 38, 36, 37, 41, 39, 51, 47, 57, 47))
@@ -92,32 +119,40 @@ ext_di(dat, th = 100)
 ext_di(dat, th = 100, ne = 10)
 
 # With QQ-plot
-ext_di(dat, th = 100, qq_plot = TRUE)
+ext_di(dat, th = 100, ne = 10, qq_plot = TRUE)
 
-# Change digits
-ext_di(dat, th = 100, ne = 10, digits = 9)
+# OEAR method
+ext_di(dat, th = 100, method = "oear")
 
 }
 \references{
+Andrews, D. W. K. (1991). Heteroskedasticity and autocorrelation consistent
+covariance matrix estimation. \emph{Econometrica}, 59(3), 817-858.
+
+Dennis, B., Munholland, P.L., and Scott, J.M. (1991) Estimation of growth
+and extinction parameters for endangered species. \emph{Ecological Monographs},
+61, 115-143.
+
+Hakoyama, H. Confidence intervals for extinction risk: validating
+population viability analysis with limited data. \emph{Methods in Ecology and
+Evolution}. In press.
+Preprint, doi:10.48550/arXiv.2509.09965
+
 Lande, R. and Orzack, S.H. (1988) Extinction dynamics of age-structured
 populations in a fluctuating environment. \emph{Proceedings of the National
 Academy of Sciences}, 85(19), 7418–7421.
 
-Dennis, B., Munholland, P.L., and Scott, J.M. (1991) Estimation of growth
-and extinction parameters for endangered species. \emph{Ecological Monographs},
-61, 115–143.
+McNamara, J. M. and Harding, K. C. (2004). Measurement error and estimates
+of population extinction risk. \emph{Ecology Letters}, 7(1), 16-20.
 
-Hakoyama, H. (2025) Confidence intervals for extinction risk: validating
-population viability analysis with limited data.
-Preprint, doi:10.48550/arXiv.2509.09965
+Newey, W. K. and West, K. D. (1987). A simple, positive semi-definite,
+heteroskedasticity and autocorrelation consistent covariance matrix.
+\emph{Econometrica}, 55(3), 703-708.
 }
 \seealso{
-\code{\link{statistics_di}},
+\code{\link{statistics_di}}, \code{\link{oear_sigma2_hac}},
 \code{\link{extinction_probability_di}},
 \code{\link{confidence_interval_wz_di}}, \code{\link{print.ext_di}}
-}
-\author{
-Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}
 }
 \keyword{methods}
 \keyword{models}

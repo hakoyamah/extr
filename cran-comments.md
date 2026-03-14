@@ -1,32 +1,21 @@
-# Version 1.0.0
+# Version 1.1.0
 
-Initial CRAN submission.
+This is an update to a previously submitted CRAN package.
+
+## Changes in this version
+
+* Added `method = "oear"` to `ext_di()`, allowing extinction probability estimates and associated confidence intervals to be computed using an observation-error-and-autocovariance-robust (OEAR) plug-in variance estimate.
+* Implemented the OEAR variance estimator using HAC long-run variance estimation with AR(1) pre-whitening and a Bartlett kernel.
+* Added OEAR-related diagnostics to the returned object and printed output.
+* Updated documentation, tests, and package metadata accordingly.
 
 ## Test environments
 
-* Local
-  - macOS (Sonoma 14.7.7), R 4.5.1, aarch64-apple-darwin20 — R CMD check clean
-  - Linux (Ubuntu 22.04.5 LTS), R 4.5.1, x86_64-pc-linux-gnu — R CMD check clean
-
-* Remote
-  - Windows (release): devtools::check_win_release()
-    - Windows Server 2022 x64, R 4.5.1, x86_64-w64-mingw32 — clean
-  - Windows (devel): devtools::check_win_devel()
-    - Windows Server 2022 x64, R Under development (unstable)
-      (2025-09-12 r88822 ucrt), x86_64-w64-mingw32 — clean
-
-## devtools::check() (local, source)
-0 errors | 0 warnings | 0 notes
-
-## R CMD check --as-cran (local, source tarball)
-Status: 1 NOTE
-
-* checking CRAN incoming feasibility ... NOTE
-  Maintainer: 'Hiroshi Hakoyama <hiroshi.hakoyama@gmail.com>'
-  New submission
-
-This NOTE is expected for an initial submission and is not specific to
-the package.
+* macOS (Monterey 12.7.6), R 4.5.2, aarch64-apple-darwin20 — `R CMD check --no-manual --as-cran` clean
+* macOS (Sonoma 14.8.2), R 4.5.2, aarch64-apple-darwin20 — `R CMD check --no-manual --as-cran` clean
+* Linux (Clear Linux OS), R 4.5.2, x86_64-pc-linux-gnu — `R CMD check --no-manual` clean
+* Windows Server 2022 x64, R 4.5.2 Patched (2026-02-13 r89426 ucrt), x86_64-w64-mingw32 — win-builder release check clean
+* Windows Server 2022 x64, R Under development (unstable) (2026-03-08 r89578 ucrt), x86_64-w64-mingw32 — win-builder devel check clean
 
 ## Reverse dependencies
 

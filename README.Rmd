@@ -15,30 +15,39 @@ knitr::opts_chunk$set(
 
 # extr
 
-The goal of **extr** is to provide tools for estimating extinction
-probabilities and confidence intervals for stochastic population models.
+The goal of **extr** is to estimate finite-horizon extinction risk from
+population time series under a density-independent (drifted Wiener) model,
+with support for both naive MLE and observation-error-and-autocovariance-robust
+(OEAR) variance estimation.
 
 ## Installation
 
 ```{r install, eval=FALSE}
-install.packages("extr_1.0.0.tar.gz", repos = NULL, type = "source")
+# CRAN release
+install.packages("extr")
 
+# GitHub version (may be newer than CRAN)
 # install.packages("remotes") # if needed
 remotes::install_github("hakoyamah/extr")
 ```
 
-## Function
+## Main function
 
 ### `ext_di()`
 
-Estimates demographic parameters and extinction probability under a
-density-independent (drifted Wiener) model. From a time series of
-population sizes, it computes MLEs of growth rate and environmental
-variance, then evaluates extinction risk over a horizon $t^{\ast}$.
-Confidence intervals are constructed by the $w$-$z$ method,
-which achieve near-nominal coverage across the full parameter space.
+`ext_di()` estimates population growth rate, variance, and extinction
+probability from a time series of population sizes. It supports two
+variance estimators: the default naive maximum-likelihood estimator
+(`method = "naive"`) and an
+observation-error-and-autocovariance-robust estimator
+(`method = "oear"`). Confidence intervals for extinction probability are
+based on the $w$-$z$ method.
 
 ## Example
+
+The following example uses the Yellowstone grizzly bear time series from
+Dennis et al. (1991), digitized from Fig. 5. The published series is a
+running 3-year sum (3-year moving total).
 
 ```{r load-library}
 library(extr)
@@ -54,18 +63,26 @@ dat <- data.frame(
 )
 ```
 
+Probability of decline to 1 individual within 100 years:
+
 ```{r extinction-1}
 ext_di(dat, th = 100)
 ```
+
+Probability of decline to 10 individuals within 100 years:
 
 ```{r extinction-10}
 ext_di(dat, th = 100, ne = 10)
 ```
 
+With QQ plot:
+
 ```{r qqplot}
-ext_di(dat, th = 100, qq_plot = TRUE)
+ext_di(dat, th = 100, ne = 10, qq_plot = TRUE)
 ```
 
-```{r digits-option}
-ext_di(dat, th = 100, digits = 9)
+Using the OEAR variance estimator:
+
+```{r oear}
+ext_di(dat, th = 100, method = "oear")
 ```

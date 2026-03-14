@@ -1,5 +1,5 @@
 # $Id: $
-# Copyright (c) 2025 Hiroshi Hakoyama
+# Copyright (c) 2025-2026 Hiroshi Hakoyama
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -119,6 +119,58 @@ extr_test_6 <- function() {
   stopifnot(found_unit)
 }
 
+extr_test_7_oear <- function() {
+  time <- 1:30
+  population <- round(seq(120, 60, length.out = length(time)))
+  dat <- data.frame(time = time, population = population)
+
+  res <- tryCatch(
+    ext_di(dat, th = 100, ne = 10, method = "oear"),
+    error = function(e) e
+  )
+  stopifnot(!inherits(res, "error"))
+  stopifnot(inherits(res, "ext_di"))
+  stopifnot(identical(res$method, "oear"))
+
+  stopifnot(
+    is.numeric(res$Variance),
+    is.finite(res$Variance),
+    res$Variance >= 0
+  )
+  stopifnot(is.list(res$method_diag))
+  stopifnot(
+    is.numeric(res$method_diag$rho_tilde_pw),
+    length(res$method_diag$rho_tilde_pw) == 1L
+  )
+  stopifnot(
+    is.numeric(res$method_diag$j),
+    length(res$method_diag$j) == 1L
+  )
+  stopifnot(
+    res$method_diag$j >= 0,
+    res$method_diag$j <= (res$qq - 1)
+  )
+
+  stopifnot(is.finite(res$Unbiased.variance), res$Unbiased.variance > 0)
+  stopifnot(is.na(res$aic))
+  stopifnot(is.finite(res$lower_cl_s), is.finite(res$upper_cl_s))
+  stopifnot(res$lower_cl_s > 0, res$upper_cl_s > res$lower_cl_s)
+}
+
+extr_test_8_oear_nonpositive_s <- function() {
+  dat <- data.frame(
+    time = 1:6,
+    population = 100 * (1.1)^(0:5)
+  )
+  err <- tryCatch(
+    ext_di(dat, th = 100, ne = 1, method = "oear"),
+    error = function(e) e
+  )
+  stopifnot(inherits(err, "error"))
+  stopifnot(grepl("Non-positive or non-finite variance estimate",
+                  conditionMessage(err), fixed = TRUE))
+}
+
 # --- runner with summary ---
 all_extr_tests <- function() {
   passed <- TRUE
@@ -129,6 +181,8 @@ all_extr_tests <- function() {
     extr_test_4()
     extr_test_5()
     extr_test_6()
+    extr_test_7_oear()
+    extr_test_8_oear_nonpositive_s()
   }, error = function(e) {
     passed <<- FALSE
     message("Test failed: ", conditionMessage(e))

@@ -1,5 +1,5 @@
 # $Id: $
-# Copyright (c) 2025 Hiroshi Hakoyama
+# Copyright (c) 2025-2026 Hiroshi Hakoyama
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -175,6 +175,29 @@ test_errors <- function() {
   message("ok: error handling")
 }
 
+test_print_ext_di_oear <- function() {
+  time <- 1:30
+  pop <- round(seq(120, 60, length.out = length(time)))
+  dat <- data.frame(time = time, population = pop)
+
+  res <- ext_di(dat, th = 100, ne = 10, method = "oear", digits = 6)
+  lines <- capture.output(print(res))
+
+  acontains(
+    lines, "Process variance \\(OEAR\\):", "OEAR variance label"
+  )
+  acontains(lines, "AR\\(1\\) pre-whitening rho:", "rho row")
+  acontains(lines, "Bartlett lag truncation \\(j\\):", "j row")
+  atrue(
+    !any(grepl("Unbiased variance:", lines)),
+    "no unbiased row for oear"
+  )
+  atrue(
+    !any(grepl("AIC for the distribution of N:", lines)),
+    "no AIC row for oear"
+  )
+}
+
 # --- runner with summary ---
 run_all_extr_base_tests <- function() {
   passed <- TRUE
@@ -184,6 +207,7 @@ run_all_extr_base_tests <- function() {
     test_ext_di_core()
     test_print_ext_di()
     test_errors()
+    test_print_ext_di_oear()
   }, error = function(e) {
     passed <<- FALSE
     message("Test failure: ", conditionMessage(e))

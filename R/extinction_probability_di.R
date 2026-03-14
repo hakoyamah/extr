@@ -71,7 +71,7 @@
 #' For \code{log_ext_comp_di}: numeric scalar \eqn{\log Q(w,z)}.\cr
 #' For \code{ext_prob_format_di}: character string formatted for display.
 #'
-#' @author Hiroshi Hakoyama, \email{hiroshi.hakoyama@@gmail.com}
+#' @author Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}
 #'
 #' @importFrom stats pnorm dnorm
 #'

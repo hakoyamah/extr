@@ -1,5 +1,5 @@
 # $Id: $
-# Copyright (c) 2013-2025 Hiroshi Hakoyama
+# Copyright (c) 2013-2026 Hiroshi Hakoyama
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -29,8 +29,9 @@
 #'
 #' @description
 #' S3 method that prints a formatted summary for an \code{ext_di} object.
-#' The output includes the extinction probability (MLE), its CI, model
-#' parameters, a brief data summary, and input settings.
+#' The output includes the plug-in extinction probability and its CI,
+#' method-specific parameter estimates, a brief data summary,
+#' and input settings.
 #'
 #' @param x An object of class \code{"ext_di"} as returned by
 #'   \code{\link{ext_di}}.
@@ -40,8 +41,6 @@
 #'
 #' @return Invisibly returns \code{x} after printing the formatted results.
 #'
-#' @author Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}
-#'
 #' @keywords internal
 #'
 #' @method print ext_di
@@ -49,7 +48,6 @@
 #' @export
 #'
 
-#' @export
 print.ext_di <- function(x, digits = NULL, ...) {
   digits <- as.integer(if (is.null(digits)) x$digits else digits)
 
@@ -68,34 +66,67 @@ print.ext_di <- function(x, digits = NULL, ...) {
   )
   pr_ci <- paste0("(", ci_fmt["lower"], ", ", ci_fmt["upper"], ")")
 
+  method <- x$method
+  is_oear <- (method == "oear")
+
   # --- table ---
-  est_table <- data.frame(
-    Estimate = c(
-      p_str,
-      fmt_num(x$Growth.rate, digits),
-      fmt_num(x$Variance, digits),
-      fmt_num(x$Unbiased.variance, digits),
-      fmt_num(x$aic, digits)
-    ),
-    CI = c(
-      pr_ci,
-      paste0("(", fmt_num(x$lower_cl_mu, digits), ", ",
-             fmt_num(x$upper_cl_mu, digits), ")"),
-      paste0("(", fmt_num(x$lower_cl_s, digits), ", ",
-             fmt_num(x$upper_cl_s, digits), ")"),
-      "-",
-      "-"
-    ),
-    row.names = c(
-      paste0("Probability of decline to ", x$ne,
-             " within ", x$th, " ", x$unit, " (MLE):"),
-      "Growth rate (MLE):",
-      "Variance (MLE):",
-      "Unbiased variance:",
-      "AIC for the distribution of N:"
-    ),
-    check.names = FALSE
-  )
+  if (is_oear) {
+    est_table <- data.frame(
+      Estimate = c(
+        p_str,
+        fmt_num(x$Growth.rate, digits),
+        fmt_num(x$Variance, digits),
+        fmt_num(x$method_diag$rho_tilde_pw, digits),
+        fmt_num(x$method_diag$j, digits)
+      ),
+      CI = c(
+        pr_ci,
+        paste0("(", fmt_num(x$lower_cl_mu, digits), ", ",
+               fmt_num(x$upper_cl_mu, digits), ")"),
+        paste0("(", fmt_num(x$lower_cl_s, digits), ", ",
+               fmt_num(x$upper_cl_s, digits), ")"),
+        "-",
+        "-"
+      ),
+      row.names = c(
+        paste0("Probability of decline to ", x$ne,
+               " within ", x$th, " ", x$unit, " (OEAR plug-in):"),
+        "Growth rate (MLE):",
+        "Process variance (OEAR):",
+        "AR(1) pre-whitening rho:",
+        "Bartlett lag truncation (j):"
+      ),
+      check.names = FALSE
+    )
+  } else {
+    est_table <- data.frame(
+      Estimate = c(
+        p_str,
+        fmt_num(x$Growth.rate, digits),
+        fmt_num(x$Variance, digits),
+        fmt_num(x$Unbiased.variance, digits),
+        fmt_num(x$aic, digits)
+      ),
+      CI = c(
+        pr_ci,
+        paste0("(", fmt_num(x$lower_cl_mu, digits), ", ",
+               fmt_num(x$upper_cl_mu, digits), ")"),
+        paste0("(", fmt_num(x$lower_cl_s, digits), ", ",
+               fmt_num(x$upper_cl_s, digits), ")"),
+        "-",
+        "-"
+      ),
+      row.names = c(
+        paste0("Probability of decline to ", x$ne,
+               " within ", x$th, " ", x$unit, " (MLE):"),
+        "Growth rate (MLE):",
+        "Environmental variance (MLE):",
+        "Unbiased variance:",
+        "AIC for the distribution of N:"
+      ),
+      check.names = FALSE
+    )
+  }
 
   data_table <- data.frame(
     Value = c(

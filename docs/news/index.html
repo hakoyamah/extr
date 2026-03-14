@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">extr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,24 +32,35 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.0" id="extr-100-2025-09-15">extr 1.0.0 (2025-09-15)<a class="anchor" aria-label="anchor" href="#extr-100-2025-09-15"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="extr-110-2026-03-14">extr 1.1.0 (2026-03-14)<a class="anchor" aria-label="anchor" href="#extr-110-2026-03-14"></a></h2>
+<div class="section level3">
+<h3 id="changes-in-1-1-0">Changes in 1.1.0<a class="anchor" aria-label="anchor" href="#changes-in-1-1-0"></a></h3>
+<ul><li>Added <code>method = "oear"</code> to <code><a href="../reference/ext_di.html">ext_di()</a></code>, allowing extinction probability estimates and associated confidence intervals to be computed using an observation-error-and-autocovariance-robust (OEAR) plug-in variance estimate.</li>
+<li>Implemented the OEAR variance estimator using HAC long-run variance estimation with AR(1) pre-whitening and a Bartlett kernel.</li>
+<li>Added OEAR diagnostics (<code>rho_tilde_pw</code> and <code>j</code>) to the returned object and printed output.</li>
+<li>Updated method-specific output: for <code>method = "naive"</code>, output includes <code>Variance</code> and <code>aic</code>; for <code>method = "oear"</code>, output includes <code>Process variance (OEAR)</code>, reports <code>aic</code> as <code>NA</code>, and reports <code>lower_cl_s</code> and <code>upper_cl_s</code> using a chi-square-based pragmatic plug-in approximation.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="extr-100-2025-09-15">extr 1.0.0 (2025-09-15)<a class="anchor" aria-label="anchor" href="#extr-100-2025-09-15"></a></h2><p class="text-muted">CRAN release: 2025-09-21</p>
 <div class="section level3">
 <h3 id="up-to-1-0-0">Up to 0.9.0<a class="anchor" aria-label="anchor" href="#up-to-1-0-0"></a></h3>
-<ul><li>Core extinction-risk estimator <code>ext_di</code> for density-independent (drifted Wiener) models. Provides:
-<ul><li>MLEs of growth rate and environmental variance from irregular time series.</li>
-<li>Point estimate of extinction probability.</li>
-<li>Confidence intervals for extinction probability (w-z method) with near-nominal coverage.</li>
-<li>QQ-plot diagnostic optional.</li>
-</ul></li>
+<ul><li>Core extinction-risk estimator <code>ext_di</code> for density-independent (drifted Wiener) models.</li>
+<li>Includes MLEs of growth rate and environmental variance from irregular time series.</li>
+<li>Includes point estimate of extinction probability.</li>
+<li>Includes confidence intervals for extinction probability (w-z method) with near-nominal coverage.</li>
+<li>Includes optional QQ-plot diagnostic.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="changes-in-1-0-0">Changes in 1.0.0<a class="anchor" aria-label="anchor" href="#changes-in-1-0-0"></a></h3>
-<ul><li>Numerical stability and range
-<ul><li>Adaptive probability representation on G, log G, and log(1-G). The complement is used when G is near 0 or 1 to maintain accuracy.</li>
-<li>The log scale removes double-precision bounds near 0 and 1, extending the safe window down to symbolic exp(-DBL_MAX). Probabilities close to 0 or 1 are displayed as 10^-* or 1-10^-*.</li>
+<ul><li>Numerical stability and range:
+<ul><li>Adaptive probability representation on G, log G, and log(1-G).</li>
+<li>Uses complement form when G is near 0 or 1 to maintain numerical accuracy.</li>
+<li>Log-scale representation extends safe range down to symbolic exp(-DBL_MAX).</li>
+<li>Probabilities near 0 or 1 are displayed as <code>10^-*</code> or <code>1-10^-*</code>.</li>
 </ul></li>
-<li>Printed output
-<ul><li>Printed precision is configurable via options(“extr.digits”).</li>
+<li>Printed output:
+<ul><li>Printed precision is configurable via <code>options("extr.digits")</code>.</li>
 </ul></li>
 </ul></div>
 </div>
@@ -62,7 +73,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

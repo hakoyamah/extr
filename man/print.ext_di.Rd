@@ -20,10 +20,8 @@ Invisibly returns \code{x} after printing the formatted results.
 }
 \description{
 S3 method that prints a formatted summary for an \code{ext_di} object.
-The output includes the extinction probability (MLE), its CI, model
-parameters, a brief data summary, and input settings.
-}
-\author{
-Hiroshi Hakoyama, \email{hiroshi.hakoyama@gmail.com}
+The output includes the plug-in extinction probability and its CI,
+method-specific parameter estimates, a brief data summary,
+and input settings.
 }
 \keyword{internal}

@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Extinction Risk Estimation">
-<meta name="description" content="Estimates extinction risk from population time series under a drifted Wiener process using the w-z method for accurate confidence intervals.">
-<meta property="og:description" content="Estimates extinction risk from population time series under a drifted Wiener process using the w-z method for accurate confidence intervals.">
+<meta name="description" content="Estimates extinction risk from population time series under a drifted Wiener process using MLE and observation-error-and-autocovariance-robust estimators, with confidence intervals based on the w-z method.">
+<meta property="og:description" content="Estimates extinction risk from population time series under a drifted Wiener process using MLE and observation-error-and-autocovariance-robust estimators, with confidence intervals based on the w-z method.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">extr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,29 +48,32 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="extr">extr<a class="anchor" aria-label="anchor" href="#extr"></a>
 </h1></div>
-<p>The goal of <strong>extr</strong> is to provide tools for estimating extinction probabilities and confidence intervals for stochastic population models.</p>
+<p>The goal of <strong>extr</strong> is to estimate finite-horizon extinction risk from population time series under a density-independent (drifted Wiener) model, with support for both naive MLE and observation-error-and-autocovariance-robust (OEAR) variance estimation.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"extr_1.0.0.tar.gz"</span>, repos <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"source"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># CRAN release</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"extr"</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># GitHub version (may be newer than CRAN)</span></span>
 <span><span class="co"># install.packages("remotes") # if needed</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"hakoyamah/extr"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="function">Function<a class="anchor" aria-label="anchor" href="#function"></a>
+<h2 id="main-function">Main function<a class="anchor" aria-label="anchor" href="#main-function"></a>
 </h2>
 <div class="section level3">
 <h3 id="ext_di">
 <code>ext_di()</code><a class="anchor" aria-label="anchor" href="#ext_di"></a>
 </h3>
-<p>Estimates demographic parameters and extinction probability under a density-independent (drifted Wiener) model. From a time series of population sizes, it computes MLEs of growth rate and environmental variance, then evaluates extinction risk over a horizon <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>t</mi><mo>*</mo></msup><annotation encoding="application/x-tex">t^{\ast}</annotation></semantics></math>. Confidence intervals are constructed by the <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>w</mi><annotation encoding="application/x-tex">w</annotation></semantics></math>-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>z</mi><annotation encoding="application/x-tex">z</annotation></semantics></math> method, which achieve near-nominal coverage across the full parameter space.</p>
+<p><code><a href="reference/ext_di.html">ext_di()</a></code> estimates population growth rate, variance, and extinction probability from a time series of population sizes. It supports two variance estimators: the default naive maximum-likelihood estimator (<code>method = "naive"</code>) and an observation-error-and-autocovariance-robust estimator (<code>method = "oear"</code>). Confidence intervals for extinction probability are based on the <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>w</mi><annotation encoding="application/x-tex">w</annotation></semantics></math>-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>z</mi><annotation encoding="application/x-tex">z</annotation></semantics></math> method.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
+<p>The following example uses the Yellowstone grizzly bear time series from Dennis et al. (1991), digitized from Fig. 5. The published series is a running 3-year sum (3-year moving total).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">extr</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -81,19 +84,20 @@
 <span>    <span class="fl">33</span>, <span class="fl">36</span>, <span class="fl">34</span>, <span class="fl">39</span>, <span class="fl">35</span>, <span class="fl">34</span>, <span class="fl">38</span>, <span class="fl">36</span>, <span class="fl">37</span>, <span class="fl">41</span>, <span class="fl">39</span>, <span class="fl">51</span>, <span class="fl">47</span>, <span class="fl">57</span>, <span class="fl">47</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Probability of decline to 1 individual within 100 years:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/ext_di.html">ext_di</a></span><span class="op">(</span><span class="va">dat</span>, th <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span><span class="co">#&gt; --- Estimates ---</span></span>
 <span><span class="co">#&gt;                                                       Estimate</span></span>
 <span><span class="co">#&gt; Probability of decline to 1 within 100 years (MLE): 9.4128e-05</span></span>
 <span><span class="co">#&gt; Growth rate (MLE):                                   0.0023556</span></span>
-<span><span class="co">#&gt; Variance (MLE):                                        0.01087</span></span>
+<span><span class="co">#&gt; Environmental variance (MLE):                          0.01087</span></span>
 <span><span class="co">#&gt; Unbiased variance:                                    0.011273</span></span>
 <span><span class="co">#&gt; AIC for the distribution of N:                          165.06</span></span>
 <span><span class="co">#&gt;                                                                        CI</span></span>
 <span><span class="co">#&gt; Probability of decline to 1 within 100 years (MLE):  (1.4586e-13, 0.5653)</span></span>
 <span><span class="co">#&gt; Growth rate (MLE):                                  (-0.038814, 0.043525)</span></span>
-<span><span class="co">#&gt; Variance (MLE):                                     (0.0070464, 0.020885)</span></span>
+<span><span class="co">#&gt; Environmental variance (MLE):                       (0.0070464, 0.020885)</span></span>
 <span><span class="co">#&gt; Unbiased variance:                                                      -</span></span>
 <span><span class="co">#&gt; AIC for the distribution of N:                                          -</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -109,19 +113,20 @@
 <span><span class="co">#&gt; Extinction threshold of population size, ne:                    1</span></span>
 <span><span class="co">#&gt; Time window for extinction risk evaluation (years), th:     100.0</span></span>
 <span><span class="co">#&gt; Significance level, alpha:                                   0.05</span></span></code></pre></div>
+<p>Probability of decline to 10 individuals within 100 years:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/ext_di.html">ext_di</a></span><span class="op">(</span><span class="va">dat</span>, th <span class="op">=</span> <span class="fl">100</span>, ne <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; --- Estimates ---</span></span>
 <span><span class="co">#&gt;                                                       Estimate</span></span>
 <span><span class="co">#&gt; Probability of decline to 10 within 100 years (MLE):  0.096852</span></span>
 <span><span class="co">#&gt; Growth rate (MLE):                                   0.0023556</span></span>
-<span><span class="co">#&gt; Variance (MLE):                                        0.01087</span></span>
+<span><span class="co">#&gt; Environmental variance (MLE):                          0.01087</span></span>
 <span><span class="co">#&gt; Unbiased variance:                                    0.011273</span></span>
 <span><span class="co">#&gt; AIC for the distribution of N:                          165.06</span></span>
 <span><span class="co">#&gt;                                                                         CI</span></span>
 <span><span class="co">#&gt; Probability of decline to 10 within 100 years (MLE):  (1.0699e-05, 0.9898)</span></span>
 <span><span class="co">#&gt; Growth rate (MLE):                                   (-0.038814, 0.043525)</span></span>
-<span><span class="co">#&gt; Variance (MLE):                                      (0.0070464, 0.020885)</span></span>
+<span><span class="co">#&gt; Environmental variance (MLE):                        (0.0070464, 0.020885)</span></span>
 <span><span class="co">#&gt; Unbiased variance:                                                       -</span></span>
 <span><span class="co">#&gt; AIC for the distribution of N:                                           -</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -137,66 +142,75 @@
 <span><span class="co">#&gt; Extinction threshold of population size, ne:                   10</span></span>
 <span><span class="co">#&gt; Time window for extinction risk evaluation (years), th:     100.0</span></span>
 <span><span class="co">#&gt; Significance level, alpha:                                   0.05</span></span></code></pre></div>
+<p>With QQ plot:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/ext_di.html">ext_di</a></span><span class="op">(</span><span class="va">dat</span>, th <span class="op">=</span> <span class="fl">100</span>, qq_plot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-qqplot-1.png" width="100%"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ext_di.html">ext_di</a></span><span class="op">(</span><span class="va">dat</span>, th <span class="op">=</span> <span class="fl">100</span>, ne <span class="op">=</span> <span class="fl">10</span>, qq_plot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-qqplot-1.png" alt="" width="100%"></p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co">#&gt; --- Estimates ---</span></span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt;                                                       Estimate</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; Probability of decline to 1 within 100 years (MLE): 9.4128e-05</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; Probability of decline to 10 within 100 years (MLE):  0.096852</span></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; Growth rate (MLE):                                   0.0023556</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; Variance (MLE):                                        0.01087</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; Environmental variance (MLE):                          0.01087</span></span>
 <span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; Unbiased variance:                                    0.011273</span></span>
 <span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; AIC for the distribution of N:                          165.06</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt;                                                                        CI</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; Probability of decline to 1 within 100 years (MLE):  (1.4586e-13, 0.5653)</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; Growth rate (MLE):                                  (-0.038814, 0.043525)</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Variance (MLE):                                     (0.0070464, 0.020885)</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; Unbiased variance:                                                      -</span></span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; AIC for the distribution of N:                                          -</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt;                                                                         CI</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; Probability of decline to 10 within 100 years (MLE):  (1.0699e-05, 0.9898)</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; Growth rate (MLE):                                   (-0.038814, 0.043525)</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Environmental variance (MLE):                        (0.0070464, 0.020885)</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; Unbiased variance:                                                       -</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; AIC for the distribution of N:                                           -</span></span>
 <span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; --- Data Summary ---</span></span>
 <span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt;                               Value</span></span>
 <span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; Current population size, nq:     47</span></span>
-<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; xd = ln(nq / ne):            3.8501</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; xd = ln(nq / ne):            1.5476</span></span>
 <span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; Sample size, q + 1:              29</span></span>
 <span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; --- Input Parameters ---</span></span>
 <span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;                                                         Parameter</span></span>
 <span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt; Time unit:                                                  years</span></span>
-<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; Extinction threshold of population size, ne:                    1</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; Extinction threshold of population size, ne:                   10</span></span>
 <span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; Time window for extinction risk evaluation (years), th:     100.0</span></span>
 <span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; Significance level, alpha:                                   0.05</span></span></code></pre></div>
+<p>Using the OEAR variance estimator:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/ext_di.html">ext_di</a></span><span class="op">(</span><span class="va">dat</span>, th <span class="op">=</span> <span class="fl">100</span>, digits <span class="op">=</span> <span class="fl">9</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ext_di.html">ext_di</a></span><span class="op">(</span><span class="va">dat</span>, th <span class="op">=</span> <span class="fl">100</span>, method <span class="op">=</span> <span class="st">"oear"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; --- Estimates ---</span></span>
-<span><span class="co">#&gt;                                                           Estimate</span></span>
-<span><span class="co">#&gt; Probability of decline to 1 within 100 years (MLE): 9.41283994e-05</span></span>
-<span><span class="co">#&gt; Growth rate (MLE):                                   0.00235564171</span></span>
-<span><span class="co">#&gt; Variance (MLE):                                       0.0108702457</span></span>
-<span><span class="co">#&gt; Unbiased variance:                                    0.0112728474</span></span>
-<span><span class="co">#&gt; AIC for the distribution of N:                          165.058678</span></span>
-<span><span class="co">#&gt;                                                                                CI</span></span>
-<span><span class="co">#&gt; Probability of decline to 1 within 100 years (MLE): (1.45860729e-13, 0.565298682)</span></span>
-<span><span class="co">#&gt; Growth rate (MLE):                                  (-0.0388142081, 0.0435254915)</span></span>
-<span><span class="co">#&gt; Variance (MLE):                                     (0.00704642493, 0.0208851222)</span></span>
-<span><span class="co">#&gt; Unbiased variance:                                                              -</span></span>
-<span><span class="co">#&gt; AIC for the distribution of N:                                                  -</span></span>
+<span><span class="co">#&gt;                                                                Estimate</span></span>
+<span><span class="co">#&gt; Probability of decline to 1 within 100 years (OEAR plug-in): 5.1099e-10</span></span>
+<span><span class="co">#&gt; Growth rate (MLE):                                            0.0023556</span></span>
+<span><span class="co">#&gt; Process variance (OEAR):                                      0.0043077</span></span>
+<span><span class="co">#&gt; AR(1) pre-whitening rho:                                       -0.52522</span></span>
+<span><span class="co">#&gt; Bartlett lag truncation (j):                                          4</span></span>
+<span><span class="co">#&gt;                                                                                  CI</span></span>
+<span><span class="co">#&gt; Probability of decline to 1 within 100 years (OEAR plug-in): (1.6408e-23, 0.027088)</span></span>
+<span><span class="co">#&gt; Growth rate (MLE):                                            (-0.038814, 0.043525)</span></span>
+<span><span class="co">#&gt; Process variance (OEAR):                                     (0.0027924, 0.0082765)</span></span>
+<span><span class="co">#&gt; AR(1) pre-whitening rho:                                                          -</span></span>
+<span><span class="co">#&gt; Bartlett lag truncation (j):                                                      -</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; --- Data Summary ---</span></span>
-<span><span class="co">#&gt;                                   Value</span></span>
-<span><span class="co">#&gt; Current population size, nq:         47</span></span>
-<span><span class="co">#&gt; xd = ln(nq / ne):                3.8501</span></span>
-<span><span class="co">#&gt; Sample size, q + 1:                  29</span></span>
+<span><span class="co">#&gt;                               Value</span></span>
+<span><span class="co">#&gt; Current population size, nq:     47</span></span>
+<span><span class="co">#&gt; xd = ln(nq / ne):            3.8501</span></span>
+<span><span class="co">#&gt; Sample size, q + 1:              29</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; --- Input Parameters ---</span></span>
-<span><span class="co">#&gt;                                                          Parameter</span></span>
-<span><span class="co">#&gt; Time unit:                                                   years</span></span>
-<span><span class="co">#&gt; Extinction threshold of population size, ne:                     1</span></span>
-<span><span class="co">#&gt; Time window for extinction risk evaluation (years), th:      100.0</span></span>
-<span><span class="co">#&gt; Significance level, alpha:                                    0.05</span></span></code></pre></div>
+<span><span class="co">#&gt;                                                         Parameter</span></span>
+<span><span class="co">#&gt; Time unit:                                                  years</span></span>
+<span><span class="co">#&gt; Extinction threshold of population size, ne:                    1</span></span>
+<span><span class="co">#&gt; Time window for extinction risk evaluation (years), th:     100.0</span></span>
+<span><span class="co">#&gt; Significance level, alpha:                                   0.05</span></span></code></pre></div>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=extr" class="external-link">View on CRAN</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>
@@ -231,7 +245,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

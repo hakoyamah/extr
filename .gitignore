@@ -1,2 +1,3 @@
-**/CVS/
+CVS/
 .DS_Store
+.Rapp.history
